@@ -1,20 +1,41 @@
 import { JsonRpcSigner } from "ethers";
 import { ethers } from "ethers";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 
 const useWalletLogin = (
   setSigner: Dispatch<SetStateAction<JsonRpcSigner | null>>
 ) => {
-  const login = async () => {
+  const getSigner = async () => {
     try {
       if (!window.ethereum) return;
+
       const provider = new ethers.BrowserProvider(window.ethereum);
+
       setSigner(await provider.getSigner());
     } catch (e) {
       console.error(e);
     }
   };
-  return login;
+  const onClickMetamask = async () => {
+    try {
+      getSigner();
+      localStorage.setItem("isLoggedIn", "true");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  const onClickLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    setSigner(null);
+  };
+
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (isLoggedIn === "true") {
+      getSigner();
+    }
+  }, []);
+  return [onClickMetamask, onClickLogout];
 };
 
 export default useWalletLogin;

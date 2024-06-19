@@ -7,7 +7,7 @@ import {
   Input,
   InputGroup,
   InputRightElement,
-  Text,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { Direction, Puzzle } from "../const";
@@ -15,8 +15,18 @@ import wordsJson from "../lib/words.json";
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { OutletContext } from "../components/Layout";
+import QuizCell from "../components/QuizCell";
+import MedalModal from "../components/MedalModal";
+import axios from "axios";
 
 const words: Puzzle[] = wordsJson as Puzzle[];
+
+enum Medal {
+  PIONEER = 1,
+  ADVANCED = 2,
+  MASTER = 3,
+  AMASSADOR = 4,
+}
 
 const Quiz = () => {
   const { signer, mintContract } = useOutletContext<OutletContext>();
@@ -26,6 +36,7 @@ const Quiz = () => {
   const [currentLevel, setCurrentLevel] = useState<number>(1);
   const [revealedPoint, setRevealedPoint] = useState(new Set());
   const [solvedIds, setSolvedIds] = useState(new Set());
+  const [medalUri, setMedalUri] = useState<string>("");
   const [wordInfo, setWordInfo] = useState<Puzzle>({
     id: 0,
     level: 1,
@@ -36,11 +47,11 @@ const Quiz = () => {
     description: "",
   });
 
-  // bool[] quizStatus revealed: DAPP [[2, 6], [2,7], [2,8], [2,9]]
-
   function checkIfRevealed(cell: Cell) {
     const { x, y } = cell;
-    if (revealedPoint.has(`${x}, ${y}`)) return cell.name;
+    if (revealedPoint.has(`${x}, ${y}`)) {
+      return cell.name;
+    }
   }
 
   interface Cell {
@@ -52,7 +63,9 @@ const Quiz = () => {
     y: number;
   }
   const generateGrid = (size: number, words: Puzzle[]) => {
-    const grid = Array.from({ length: size }, () => Array(size).fill(null));
+    const grid: Cell[][] = Array.from({ length: size }, () =>
+      Array(size).fill(null)
+    );
 
     words.forEach(({ id, name, x, y, direction }) => {
       for (let i = 0; i < name.length; i++) {
@@ -79,10 +92,7 @@ const Quiz = () => {
     });
     return grid;
   };
-
   const gridSize = 16;
-
-  const grid = generateGrid(gridSize, words);
 
   const handleWordClick = (id: number) => {
     const found = words.find((word) => word.id === id);
@@ -98,20 +108,32 @@ const Quiz = () => {
       if (solvedIds.has(wordInfo.id)) {
         return;
       }
-
       const validate = new Promise((resolve, reject) => {
         const upperCasedAnswer = answer.toUpperCase();
         setIsLoading(true);
         mintContract
           .solveQuestion(wordInfo.id, upperCasedAnswer, currentLevel)
-          .then((value) => {
+          .then((tx) => {
+            setSolvedIds((prev) => {
+              prev.add(wordInfo.id);
+              return prev;
+            });
+            setRevealedPoint((prev) => {
+              if (wordInfo.direction === "horizontal") {
+                for (let i = 0; i < wordInfo.name.length; i++)
+                  prev.add(`${wordInfo.x + i}, ${wordInfo.y}`);
+              } else if (wordInfo.direction === "vertical") {
+                for (let i = 0; i < wordInfo.name.length; i++) {
+                  prev.add(`${wordInfo.x}, ${wordInfo.y + i}`);
+                }
+              }
+              return prev;
+            });
+            // tx.wait();
             setIsLoading(false);
             setTimeout(() => {
-              getQuizStatus();
-
               resolve(200);
-            }, 5000);
-            console.log({ value });
+            }, 100);
           })
           .catch((error) => {
             console.log(error);
@@ -119,7 +141,7 @@ const Quiz = () => {
 
             setTimeout(() => {
               setIsError(true);
-              reject(200);
+              reject(error);
             }, 4000);
           });
       });
@@ -132,26 +154,43 @@ const Quiz = () => {
         },
         loading: { title: "Checking...", description: "Please wait" },
       });
-
+      await validate;
       setIsLoading(true);
-      wordInfo.id;
     } catch (e) {
       console.error(e);
     } finally {
       setIsLoading(false);
     }
   };
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
-  // only admin
-  // const generateQuiz = async () => {
-  //   try {
-  //     await mintContract.generateQuiz(
-  //       words.map((word) => [word.name, word.name, word.id])
-  //     );
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
+  useEffect(() => {
+    if (medalUri) {
+      onOpen();
+    }
+  }, [medalUri]);
+  useEffect(() => {
+    if (mintContract) {
+      // Define the event listener
+      const handleMedalAwarded = (
+        user: string,
+        level: number,
+        medalUri: string
+      ) => {
+        console.log("Medal awarded:", user, level, medalUri);
+        setMedalUri(medalUri);
+      };
+
+      // Attach the event listener
+      mintContract.on("MedalAwarded", handleMedalAwarded);
+
+      // Clean up the event listener on component unmount
+      return () => {
+        mintContract.off("MedalAwarded", handleMedalAwarded);
+      };
+    }
+  }, [mintContract]);
+
   const getQuizStatus = async () => {
     try {
       setIsLoading(true);
@@ -160,7 +199,6 @@ const Quiz = () => {
       const solvedQuizList = new Set();
       response.forEach((bool: boolean, index: number) => {
         if (bool) {
-          // 좌표 찍기
           const id = currentLevel * 0 + index + 1;
           solvedQuizList.add(id);
           const word = words.find((w) => w.id === id);
@@ -187,15 +225,17 @@ const Quiz = () => {
 
   useEffect(() => {
     if (!signer || !mintContract) return;
-    // generateQuiz();
     getQuizStatus();
   }, [signer, mintContract]);
+
+  const grid = generateGrid(gridSize, words);
   return (
     <Box mx={"auto"} pt={28}>
       <Box mb={20}>
         <Flex justifyContent={"center"} gap={8}>
           {Array.from({ length: 4 }, (_, i) => (
             <Button
+              colorScheme={"pink"}
               key={i}
               isDisabled={currentLevel < i + 1}
               onClick={() => setCurrentLevel(i + 1)}
@@ -207,72 +247,44 @@ const Quiz = () => {
       </Box>
       <Flex justifyContent="center">
         <Grid gridTemplateColumns={"repeat(16, 1fr)"} gap={0}>
-          {grid.flat().map((cell, index) =>
-            cell ? (
-              <GridItem
-                key={index}
-                bgColor={"white"}
-                datatype={cell.id}
-                w={10}
-                h={10}
-                borderWidth={1}
-                display={"flex"}
-                alignItems={"center"}
-                justifyContent={"center"}
-                borderColor={"gray.700"}
-                pos={"relative"}
-              >
-                {cell.index === 0 && (
-                  <Flex
-                    pos={"absolute"}
-                    top={1}
-                    left={1}
-                    fontSize={10}
-                    textColor={"white"}
-                    bgColor={"crypto"}
-                    w={3}
-                    h={3}
-                    justifyContent={"center"}
-                    alignItems={"center"}
-                    rounded={"full"}
-                    cursor={"pointer"}
-                    onClick={() => {
-                      handleWordClick(cell.id);
-                    }}
-                  >
-                    {cell.id}
-                  </Flex>
-                )}
-                <Text pos={"relative"}>{checkIfRevealed(cell)}</Text>
-              </GridItem>
-            ) : (
-              <GridItem
-                key={index}
-                bgColor={"black"}
-                w={10}
-                h={10}
-                borderWidth={1}
-                display={"flex"}
-                alignItems={"center"}
-                justifyContent={"center"}
-                borderColor={"gray.700"}
-              ></GridItem>
-            )
-          )}
+          {grid
+            .flat()
+            .map((cell, index) =>
+              cell ? (
+                <QuizCell
+                  key={index}
+                  cell={cell}
+                  checkIfRevealed={checkIfRevealed}
+                  handleWordClick={handleWordClick}
+                />
+              ) : (
+                <GridItem
+                  key={index}
+                  bgColor={"black"}
+                  w={10}
+                  h={10}
+                  borderWidth={1}
+                  display={"flex"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
+                  borderColor={"gray.700"}
+                ></GridItem>
+              )
+            )}
         </Grid>
       </Flex>
       <Box mt={6} mx={"auto"} w={"576px"}>
         <label htmlFor="">
-          <Text color="white">
+          <Box color="white">
             {wordInfo.description}{" "}
             {solvedIds.has(wordInfo.id) ? (
-              <Box mt={2} fontSize={"small"} color={"red"}>
-                You already solved this question 🙌🏼
+              <Box mt={2} fontSize={"small"} color={"pink"}>
+                You solved this question 🙌🏼
               </Box>
             ) : (
               ""
             )}
-          </Text>
+          </Box>
         </label>
         <InputGroup mt={4}>
           <Input
@@ -298,6 +310,12 @@ const Quiz = () => {
         </InputGroup>
       </Box>
       <Box height={200} w={"100%"}></Box>
+      <MedalModal
+        onClose={onClose}
+        metadataUri={medalUri}
+        name={Medal[currentLevel]}
+        isOpen={isOpen}
+      />
     </Box>
   );
 };

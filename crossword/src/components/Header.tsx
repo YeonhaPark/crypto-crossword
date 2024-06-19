@@ -20,18 +20,15 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
   const navigate = useNavigate();
-  const onClickMetamask = useWalletLogin(setSigner);
+  const [onClickMetamask, onClickLogout] = useWalletLogin(setSigner);
 
-  const onClickLogout = () => {
-    setSigner(null);
-  };
   return (
     <Flex
       alignItems={"center"}
       boxShadow={"0 4px 4px -2px rgba(0, 0, 0, 0.1)"}
       justifyContent={"space-between"}
       h={20}
-      px={4}
+      px={14}
     >
       <Flex
         w={40}
@@ -39,8 +36,9 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
         onClick={() => navigate("/")}
         fontWeight={"semibold"}
         alignItems={"center"}
+        color={"white"}
       >
-        Save the Ocean
+        CRYPTO CROSS
       </Flex>
 
       <Flex
@@ -52,12 +50,18 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
         {signer ? (
           <Button
             onClick={onClickLogout}
-            textColor={"blue.500"}
+            bgColor="crypto"
+            textColor={"white"}
+            colorScheme="white"
           >{`${signer.address.substring(0, 6)}...${signer.address.substring(
             signer.address.length - 4
           )}`}</Button>
         ) : (
-          <Button onClick={onClickMetamask} bgColor="transparent">
+          <Button
+            onClick={onClickMetamask}
+            bgColor="purple"
+            colorScheme="purple"
+          >
             <Image
               src="/images/metamask.svg"
               alt="Metamask Login"
@@ -72,8 +76,8 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
       <Flex display={["flex", "flex", "none"]}>
         <Menu>
           <MenuButton
-            textColor={"blue.500"}
-            borderColor={"blue.400"}
+            textColor={"crypto"}
+            borderColor={"crypto"}
             borderWidth={"3px"}
             bgColor={"white"}
             fontWeight={"semibold"}
