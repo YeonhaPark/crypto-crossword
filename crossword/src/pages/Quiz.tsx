@@ -17,7 +17,6 @@ import { useOutletContext } from "react-router-dom";
 import { OutletContext } from "../components/Layout";
 import QuizCell from "../components/QuizCell";
 import MedalModal from "../components/MedalModal";
-import axios from "axios";
 
 const words: Puzzle[] = wordsJson as Puzzle[];
 
@@ -113,7 +112,7 @@ const Quiz = () => {
         setIsLoading(true);
         mintContract
           .solveQuestion(wordInfo.id, upperCasedAnswer, currentLevel)
-          .then((tx) => {
+          .then(() => {
             setSolvedIds((prev) => {
               prev.add(wordInfo.id);
               return prev;
