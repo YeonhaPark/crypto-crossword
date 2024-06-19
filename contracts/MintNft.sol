@@ -20,11 +20,12 @@ contract PuzzleRewards is ERC1155, Ownable {
     TokenInfo[] public tokens;
     TokenInfo[] public medals;
     
-    mapping(string => uint256) public quiz;
+    mapping(string => uint256) public token;
     mapping(uint256 => LEVEL) private levelMapping;
     mapping(uint256 => TokenInfo) private tokenInfo;
     mapping(address => mapping(uint256 => bool)) public userProgress; 
     mapping(address => uint256) public levelCompleted; 
+    event MedalAwarded(address indexed user, uint256 level, string medalUri);
 
     constructor(string memory _metadataUri) ERC1155(_metadataUri) Ownable(msg.sender) {
         levelMapping[1] = LEVEL.PIONEER;
@@ -35,9 +36,9 @@ contract PuzzleRewards is ERC1155, Ownable {
     }
 
 
-    function getQuizStatus() public view returns (bool[10] memory) {
+    function getQuizStatus() public view returns (bool[] memory) {
         TokenInfo[] memory list = getQuizList();
-        bool[10] memory status;
+          bool[] memory status = new bool[](list.length); 
         for (uint i = 0; i < list.length; i++) {
            status[i] = userProgress[msg.sender][list[i].id];
         }
@@ -46,8 +47,8 @@ contract PuzzleRewards is ERC1155, Ownable {
     function generateQuiz(TokenInfo[] memory _tokenInfo) public onlyOwner {
         for (uint256 i = 0; i < _tokenInfo.length; i++) {
             tokens.push(_tokenInfo[i]);
-           require(quiz[_tokenInfo[i].name] == 0, "Token already exists");
-            quiz[_tokenInfo[i].name] = _tokenInfo[i].id;
+           require(token[_tokenInfo[i].name] == 0, "Token already exists");
+            token[_tokenInfo[i].name] = _tokenInfo[i].id;
         }
     } 
 
@@ -55,34 +56,33 @@ contract PuzzleRewards is ERC1155, Ownable {
         return tokens;
     }
 
-    function solveQuestion(uint256 id, string memory _name, uint32 level) public {
+    function solveQuestion(uint256 id, string memory _name, uint level) public {
         require(!userProgress[msg.sender][id], "Question already solved");
 
-        uint256 tokenId = quiz[_name];
+        uint256 tokenId = token[_name];
         require(tokenId > 0 && tokenId == id, "Invalid question or answer");
 
         userProgress[msg.sender][id] = true;
 
         _mint(msg.sender, id, 1, "");
-
-
-        if (checkAllQuestionsSolved()) {
-            awardMedalToken(msg.sender, level);
+         if (checkAllQuestionsSolved()) {
+            string memory medalUri = awardMedalToken(msg.sender, level);
+            emit MedalAwarded(msg.sender, level, medalUri);
         }
     } 
 
     function balanceOfNfts(address _owner) public view returns (uint256[] memory) {
-        uint256[] memory result; 
+        uint256[] memory result = new uint256[](tokens.length);
 
         for (uint256 i = 0; i < tokens.length; i++) {
-            result[i] = balanceOf(_owner, quiz[tokens[i].name]);
+            result[i] = balanceOf(_owner, token[tokens[i].name]);
         }
         return result;
     }
-
-    function checkAllQuestionsSolved() public view returns (bool) {
-        for (uint256 i = 1; i <= 10; i++) {
-            if (!userProgress[msg.sender][i]) {
+    
+   function checkAllQuestionsSolved() public view returns (bool) {
+        for (uint256 i = 0; i < tokens.length; i++) {
+            if (!userProgress[msg.sender][tokens[i].id]) {
                 return false;
             }
         }
@@ -93,11 +93,11 @@ contract PuzzleRewards is ERC1155, Ownable {
         return levelCompleted[to];
     }
     
-    function awardMedalToken(address to, uint256 level) internal returns (string memory) {
-        require(levelCompleted[to] >= level , "Medal already awarded");
+    function awardMedalToken(address to, uint256 level) public returns (string memory) {
+        require(levelCompleted[to] < level , "Medal already awarded");
 
         levelCompleted[to] = level;
-     
+   
          string memory levelName;
         if (level == 1) {
             levelName = "PIONEER";
@@ -110,8 +110,11 @@ contract PuzzleRewards is ERC1155, Ownable {
         } else {
             revert("Invalid level");
         }
-
-        medals[level] = TokenInfo(levelName, level);
+        if (medals.length <= level) {
+            medals.push(TokenInfo(levelName, level));
+        } else {
+            medals[level] = TokenInfo(levelName, level);
+        }
         _mint(to, level, 1, "");
          return string(abi.encodePacked(metadataUri, Strings.toString(level), ".json"));
     }
