@@ -1,9 +1,11 @@
 import { JsonRpcSigner } from "ethers";
+import { Contract } from "ethers";
 import { ethers } from "ethers";
 import { Dispatch, SetStateAction, useEffect } from "react";
 
 const useWalletLogin = (
-  setSigner: Dispatch<SetStateAction<JsonRpcSigner | null>>
+  setSigner: Dispatch<SetStateAction<JsonRpcSigner | null>>,
+  setMintContract: Dispatch<SetStateAction<Contract | null>>
 ) => {
   const getSigner = async () => {
     try {
@@ -27,6 +29,7 @@ const useWalletLogin = (
   const onClickLogout = () => {
     localStorage.removeItem("isLoggedIn");
     setSigner(null);
+    setMintContract(null);
   };
 
   useEffect(() => {

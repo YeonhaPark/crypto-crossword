@@ -18,6 +18,7 @@ import { OutletContext } from "../components/Layout";
 import QuizCell from "../components/QuizCell";
 import MedalModal from "../components/MedalModal";
 
+const gridSize = 16;
 const words: Puzzle[] = wordsJson as Puzzle[];
 
 enum Medal {
@@ -29,10 +30,12 @@ enum Medal {
 
 const Quiz = () => {
   const { signer, mintContract } = useOutletContext<OutletContext>();
+  const [grid, setGrid] = useState<Cell[][]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
   const [answer, setAnswer] = useState<string>("");
   const [currentLevel, setCurrentLevel] = useState<number>(1);
+  const [completedLevel, setCompletedLevel] = useState<number>(0);
   const [revealedPoint, setRevealedPoint] = useState(new Set());
   const [solvedIds, setSolvedIds] = useState(new Set());
   const [medalUri, setMedalUri] = useState<string>("");
@@ -61,37 +64,43 @@ const Quiz = () => {
     x: number;
     y: number;
   }
-  const generateGrid = (size: number, words: Puzzle[]) => {
-    const grid: Cell[][] = Array.from({ length: size }, () =>
-      Array(size).fill(null)
-    );
 
-    words.forEach(({ id, name, x, y, direction }) => {
-      for (let i = 0; i < name.length; i++) {
-        if (direction === "horizontal") {
-          grid[y][x + i] = {
-            index: i,
-            name: name[i],
-            direction,
-            id,
-            x: x + i,
-            y,
-          };
-        } else if (direction === "vertical") {
-          grid[y + i][x] = {
-            index: i,
-            name: name[i],
-            direction,
-            id,
-            x,
-            y: y + i,
-          };
+  useEffect(() => {
+    const wordsPerLevel = () => {
+      return words.filter((word) => word.level === currentLevel);
+    };
+    const generateGrid = () => {
+      const myGrid = Array.from({ length: gridSize }, () =>
+        Array(gridSize).fill(null)
+      );
+      wordsPerLevel().forEach(({ id, name, x, y, direction }) => {
+        for (let i = 0; i < name.length; i++) {
+          if (direction === "horizontal") {
+            myGrid[y][x + i] = {
+              index: i,
+              name: name[i],
+              direction,
+              id,
+              x: x + i,
+              y,
+            };
+          } else if (direction === "vertical") {
+            myGrid[y + i][x] = {
+              index: i,
+              name: name[i],
+              direction,
+              id,
+              x,
+              y: y + i,
+            };
+          }
         }
-      }
-    });
-    return grid;
-  };
-  const gridSize = 16;
+      });
+      return myGrid;
+    };
+
+    setGrid(generateGrid());
+  }, [currentLevel, signer]);
 
   const handleWordClick = (id: number) => {
     const found = words.find((word) => word.id === id);
@@ -192,6 +201,7 @@ const Quiz = () => {
 
   const getQuizStatus = async () => {
     try {
+      console.log("signer가 교체되어 getQuizStatus가 다시 불립니다.");
       setIsLoading(true);
       const response = await mintContract.getQuizStatus();
       const set = new Set();
@@ -223,11 +233,21 @@ const Quiz = () => {
   };
 
   useEffect(() => {
-    if (!signer || !mintContract) return;
-    getQuizStatus();
+    if (!signer || !mintContract) {
+      setRevealedPoint(new Set());
+      setSolvedIds(new Set());
+    } else {
+      const getLevel = async () => {
+        const response: bigint = await mintContract.levelCompleted(
+          signer.address
+        );
+        setCompletedLevel(Number(response));
+      };
+      getLevel();
+      getQuizStatus();
+    }
   }, [signer, mintContract]);
 
-  const grid = generateGrid(gridSize, words);
   return (
     <Box mx={"auto"} pt={28}>
       <Box mb={20}>

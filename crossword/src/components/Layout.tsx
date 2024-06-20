@@ -23,7 +23,11 @@ const Layout: FC = () => {
 
   return (
     <Box minH={"100vh"} bgColor={"#000000"}>
-      <Header signer={signer} setSigner={setSigner} />
+      <Header
+        signer={signer}
+        setSigner={setSigner}
+        setMintContract={setMintContract}
+      />
       <Box maxW={1024} marginX={"auto"}>
         <Outlet context={{ signer, mintContract, setSigner }} />
       </Box>

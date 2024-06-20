@@ -1,18 +1,22 @@
 import { Button, Flex, Image, Text } from "@chakra-ui/react";
 import { Dispatch, FC, SetStateAction } from "react";
 
-import { JsonRpcSigner } from "ethers";
+import { Contract, JsonRpcSigner } from "ethers";
 import { useNavigate } from "react-router-dom";
 import useWalletLogin from "../hooks/useWalletLogin";
 
 interface HeaderProps {
   signer: JsonRpcSigner | null;
   setSigner: Dispatch<SetStateAction<JsonRpcSigner | null>>;
+  setMintContract: Dispatch<SetStateAction<Contract | null>>;
 }
 
-const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
+const Header: FC<HeaderProps> = ({ signer, setSigner, setMintContract }) => {
   const navigate = useNavigate();
-  const [onClickMetamask, onClickLogout] = useWalletLogin(setSigner);
+  const [onClickMetamask, onClickLogout] = useWalletLogin(
+    setSigner,
+    setMintContract
+  );
 
   return (
     <Flex

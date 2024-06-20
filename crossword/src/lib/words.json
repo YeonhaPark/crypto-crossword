@@ -88,5 +88,23 @@
     "x": 8,
     "y": 9,
     "description": "A computer connected to a blockchain network, participating in the network's consensus process"
+  },
+  {
+    "id": 11,
+    "level": 2,
+    "name": "validator",
+    "x": 7,
+    "y": 0,
+    "direction": "vertical",
+    "description": "A participant in a blockchain network responsible for verifying transactions"
+  },
+  {
+    "id": 16,
+    "level": 2,
+    "name": "validator",
+    "x": 7,
+    "y": 0,
+    "direction": "vertical",
+    "description": "A participant in a blockchain network responsible for verifying transactions"
   }
 ]
