@@ -236,6 +236,7 @@ const Quiz = () => {
             <Button
               colorScheme={"pink"}
               key={i}
+              className="bungee-regular"
               isDisabled={currentLevel < i + 1}
               onClick={() => setCurrentLevel(i + 1)}
             >
@@ -298,6 +299,7 @@ const Quiz = () => {
           <InputRightElement right={2} width="4.5rem">
             <Button
               h="1.75rem"
+              className="bungee-regular"
               size="sm"
               onClick={handleSubmit}
               isLoading={isLoading}

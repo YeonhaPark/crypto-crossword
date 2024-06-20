@@ -33,6 +33,7 @@ const Home: FC = () => {
         bgColor={"purple"}
         fontWeight={"bold"}
         fontSize={32}
+        className="bungee-regular"
         textShadow={"-1px 0 black, 0 1px black, 1px 0 black"}
         size={"lg"}
       >

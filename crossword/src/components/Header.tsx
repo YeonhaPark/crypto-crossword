@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Image,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-} from "@chakra-ui/react";
+import { Button, Flex, Image, Text } from "@chakra-ui/react";
 import { Dispatch, FC, SetStateAction } from "react";
 
 import { JsonRpcSigner } from "ethers";
@@ -26,6 +17,7 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
   return (
     <Flex
       alignItems={"center"}
+      pt={8}
       boxShadow={"0 4px 4px -2px rgba(0, 0, 0, 0.1)"}
       justifyContent={"space-between"}
       h={20}
@@ -33,13 +25,14 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
     >
       <Flex
         w={40}
-        fontSize={20}
+        fontSize={[20, 24, 24]}
         onClick={() => navigate("/")}
         fontWeight={"semibold"}
         alignItems={"center"}
         color={"white"}
+        className="bungee-regular"
       >
-        <Box>CRYPTO CROSS</Box>
+        CRYPTO CROSS
       </Flex>
 
       <Flex
@@ -60,8 +53,12 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
         ) : (
           <Button
             onClick={onClickMetamask}
-            bgColor="purple"
-            colorScheme="purple"
+            textColor={"crypto"}
+            borderColor={"crypto"}
+            borderWidth={"3px"}
+            bgColor={"white"}
+            className="bungee-regular"
+            fontSize={[18, 20, 20]}
           >
             <Image
               src="/images/metamask.svg"
@@ -75,38 +72,33 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
         )}
       </Flex>
       <Flex display={["flex", "flex", "none"]}>
-        <Menu>
-          <MenuButton
-            textColor={"crypto"}
-            borderColor={"crypto"}
-            borderWidth={"3px"}
-            bgColor={"white"}
-            fontWeight={"semibold"}
-            as={Button}
-          >
-            {signer
-              ? `${signer.address.substring(0, 6)}...${signer.address.substring(
-                  signer.address.length - 4
-                )}`
-              : "Menu"}
-          </MenuButton>
-          <MenuList>
-            {!signer && (
-              <MenuItem onClick={() => onClickMetamask()}>
-                <Image
-                  mr={2}
-                  src="/images/metamask.svg"
-                  alt="METAMASK login"
-                  w={6}
-                  h={6}
-                />{" "}
-                METAMASK LOGIN
-              </MenuItem>
-            )}
-
-            {signer && <MenuItem onClick={onClickLogout}>LOGOUT</MenuItem>}
-          </MenuList>
-        </Menu>
+        <Button
+          textColor={"crypto"}
+          borderColor={"crypto"}
+          borderWidth={"3px"}
+          bgColor={"white"}
+          fontWeight={"semibold"}
+          as={Button}
+          className="bungee-regular"
+        >
+          {signer ? (
+            <Text fontSize={[14, 14, 18]}>
+              `${signer.address.substring(0, 6)}...$
+              {signer.address.substring(signer.address.length - 4)}`
+            </Text>
+          ) : (
+            <>
+              <Image
+                mr={2}
+                src="/images/metamask.svg"
+                alt="METAMASK login"
+                w={6}
+                h={6}
+              />
+              LOGIN
+            </>
+          )}
+        </Button>
       </Flex>
     </Flex>
   );
