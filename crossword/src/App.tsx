@@ -2,7 +2,6 @@ import { FC } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Layout from "./components/Layout";
-import "./index.css";
 import Quiz from "./pages/Quiz";
 const App: FC = () => {
   return (

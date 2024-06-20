@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Flex,
   Image,
@@ -38,7 +39,7 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
         alignItems={"center"}
         color={"white"}
       >
-        CRYPTO CROSS
+        <Box>CRYPTO CROSS</Box>
       </Flex>
 
       <Flex

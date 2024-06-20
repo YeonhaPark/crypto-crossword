@@ -5,7 +5,6 @@ import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import "./index.css";
 const theme = extendTheme({
   fonts: {
-    heading: `'Proto mono', sans-serif`,
     body: `'Proto mono', sans-serif`,
   },
   colors: {
