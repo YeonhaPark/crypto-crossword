@@ -1,30 +1,20 @@
-# React + TypeScript + Vite
+# Crypto Crossword
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Learn Web3.0 knowledge in a fun way through crossword puzzles and test your level! 🧩✨
 
-Currently, two official plugins are available:
+Crypto Crossword is a DApp built with Ethereum Solidity. Every time you solve a puzzle, an ERC-1155 token is minted. Upon completing a level, you receive a cool medal NFT! 🏅 Show off your medal NFT to your friends. 📣
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Crypto Crossword is constantly being updated. Your feedback is always welcome! 💬
 
-## Expanding the ESLint configuration
+All tokens are minted using ERC-1155 and IPFS is managed via Pinata. Images are generated using AI image generators. 🤖🎨
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Challenges faced: Ensuring that the medal NFT is seamlessly issued after the consecutive issuance of NFTs upon meeting set conditions was quite tricky. ⚙️
 
-- Configure the top-level `parserOptions` property like this:
+How to use:
+Visit the website and click the start button to access the quiz site. 🖱️
+Log in to MetaMask, solve all the quizzes, and check if a medal token is awarded when a modal window appears. 🔑🎉
+Crypto Crossword is constantly being updated. Your feedback is always welcome! 💬
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+Website: Crypto Crossword 🌐
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+License: MIT
