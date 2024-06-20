@@ -1,26 +1,26 @@
 @font-face {
   font-weight: 100;
   font-family: "Proto mono";
-  src: url("../public/fonts/ProtoMono-Light.woff2") format("woff2"),
+  src: url("../public/fonts/ProtoMono-Light.woff2") format("font-woff2"),
     url("../public/fonts/ProtoMono-Light.woff") format("woff");
 }
 @font-face {
   font-weight: 300;
   font-family: "Proto mono";
-  src: url("../public/fonts/ProtoMono-Regular.woff2") format("woff2"),
+  src: url("../public/fonts/ProtoMono-Regular.woff2") format("font-woff2"),
     url("../public/fonts/ProtoMono-Regular.woff") format("woff");
 }
 @font-face {
   font-weight: 400;
   font-family: "Proto mono";
   font-style: normal;
-  src: url("../public/fonts/ProtoMono-Medium.woff2") format("woff2"),
+  src: url("../public/fonts/ProtoMono-Medium.woff2") format("font-woff2"),
     url("../public/fonts/ProtoMono-Medium.woff") format("woff");
 }
 @font-face {
   font-weight: 500;
   font-family: "Proto mono";
-  src: url("../public/fonts/ProtoMono-Semibold.woff2") format("woff2"),
+  src: url("../public/fonts/ProtoMono-Semibold.woff2") format("font-woff2"),
     url("../public/fonts/ProtoMono-Semibold.woff") format("woff");
 }
 
